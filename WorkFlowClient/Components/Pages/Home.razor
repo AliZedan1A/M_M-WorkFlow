@@ -1,0 +1,432 @@
+﻿@page "/"
+@using Domain.DataTransfareObject
+@using Domain.Databases
+@using System.Globalization
+@using WorkFlowClient.Services.Class
+@using WorkFlowClient.Services.Interfaces
+@inject IShiftService _shiftservice;
+@inject LangState Lang
+@inject NavigationManager _nav;
+@inject IUserService _userservice
+
+<section class="home-container">
+
+
+@if(IsLoding)
+{
+   
+  
+}
+else
+{
+    
+
+@if (isauth)
+{
+    @if (status == VerfyStatus.pending)
+    {
+        <div class="alert alert-pending">
+            ⏳ حسابك قيد المراجعة، يرجى الانتظار حتى موافقة الإدارة.
+        </div>
+    }
+    else if (status == VerfyStatus.rejected)
+    {
+        <div class="alert alert-rejected">
+            ❌ تم رفض حسابك، يرجى التسجيل مرة أخرى.
+        </div>
+    }
+    else if (status == VerfyStatus.Active)
+    {
+        <!-- WELCOME -->
+            <div class="welcome-header">
+                <h1 class="title">👋 مرحباً بك</h1>
+                <button class="btn-refresh" @onclick="RefreshPage">
+                    <i class="fas fa-sync-alt"></i>
+                </button>
+            </div>
+
+            <div class="clock-card" dir="rtl">
+                <div class="clock-row">
+                    <div class="clock-time">@TimeString</div>
+                    <div class="clock-sep">•</div>
+                    <div class="clock-date">@DateString</div>
+                </div>
+                <div class="clock-sub">
+                    ‏@DayString  •  אזור זמן: Asia/Jerusalem
+                </div>
+            </div>
+        <!-- SHIFT ACTION -->
+        <div class="shift-box">
+            @if (CurrentShift == null)
+            {
+                <div class="shift-card idle">
+                    <div class="shift-header">
+                        <i class="fas fa-briefcase"></i>
+                        <span>لا يوجد وردية حالياً</span>
+                    </div>
+                    <p class="shift-note">يمكنك بدء وردية جديدة بالضغط على الزر أدناه</p>
+                    <button class="btn-shift action" @onclick="@(() => ShowConfirm("start"))">
+                        <i class="fas fa-camera"></i> بدء وردية
+                    </button>
+                </div>
+            }
+            else
+            {
+                <div class="shift-card active">
+                    <div class="shift-header">
+                        <i class="fas fa-clock"></i>
+                        <span>وردية جارية</span>
+                    </div>
+                    <p>بدأت عند: <b>@CurrentShift.StartTime.ToString("HH:mm")</b></p>
+                    <img src="@ImageLink" alt="proof" class="shift-proof" />
+                    <button class="btn-shift action danger" @onclick="@(() => ShowConfirm("end"))">
+                        <i class="fas fa-stop-circle"></i> إنهاء الوردية
+                    </button>
+                </div>
+            }
+        </div>
+
+        <!-- MY SHIFTS -->
+        <section class="my-shifts">
+            <div class="shifts-header">
+                <h2>📅 وردياتي</h2>
+
+                <!-- FILTER -->
+                <div class="shift-filter">
+                    <label>اختر الشهر:</label>
+                    <select @onchange="OnMonthChanged" value="@SelectedMonth">
+                        @for (int m = 1; m <= 12; m++)
+                        {
+                            <option value="@m" selected="@(m == SelectedMonth)">
+                                @CultureInfo.CurrentCulture.DateTimeFormat.GetMonthName(m)
+                            </option>
+                        }
+                    </select>
+
+                    <label>اختر السنة:</label>
+                    <select @onchange="OnYearChanged" value="@SelectedYear">
+                        @foreach (var y in AvailableYears)
+                        {
+                            <option value="@y" selected="@(y == SelectedYear)">
+                                @y
+                            </option>
+                        }
+                    </select>
+
+                    <span class="count">(@FilteredShifts.Count)</span>
+                </div>
+            </div>
+
+            @if (FilteredShifts?.Any() == true)
+            {
+                <div class="shift-list">
+                    @foreach (var s in FilteredShifts)
+                    {
+                        <div class="shift-item">
+                            <span class="date">@s.StartTime.ToString("dd.MM.yyyy")</span>
+                            <span class="time">@s.StartTime.ToString("HH:mm") - @s.EndTime.ToString("HH:mm")</span>
+                        </div>
+                    }
+                </div>
+            }
+            else
+            {
+                <p class="empty">لا يوجد لديك ورديات مقبولة في هذا الشهر.</p>
+            }
+            <p class="empty">انت تملك @NumberOfPendingShift ورديات باٍنتظار القبول</p>
+        </section>
+    }
+}
+else
+{
+    <div class="guest-box">
+        <h1 class="title">👋 مرحباً بك</h1>
+        <p class="subtitle">يرجى تسجيل الدخول للمتابعة واستخدام النظام</p>
+        <div class="guest-actions">
+            <a href="/login" class="btn primary">تسجيل الدخول</a>
+            <a href="/about" class="btn secondary">ℹ️ عن النظام</a>
+        </div>
+    </div>
+}
+}
+</section>
+
+<!-- CONFIRM MODAL -->
+@if (ShowConfirmModal)
+{
+    <div class="modal-backdrop" @onclick="CloseConfirm">
+        <div class="modal-content" @onclick:stopPropagation="true">
+            <h3>تأكيد العملية</h3>
+            <p>@ConfirmMessage</p>
+            <div class="modal-actions">
+                <button class="btn primary" @onclick="ConfirmAction">تأكيد</button>
+                <button class="btn secondary" @onclick="CloseConfirm">إلغاء</button>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    private bool isauth = false;
+    private VerfyStatus status = VerfyStatus.pending;
+    private string ImageLink = "";
+    private List<shiftModel> MyShifts = new();
+    private bool IsLoding = true;
+    private shiftModel? CurrentShift;
+    private int NumberOfPendingShift;
+    private string TimeString = "";
+    private string DateString = "";
+    private string DayString = "";
+    private PeriodicTimer? _timer;
+    private CancellationTokenSource _cts = new();
+    private readonly CultureInfo _he = new("he-IL");
+
+    // نبحث عن التايمزون بشكل مرن (ويندوز/لينكس/أندرويد)
+    private TimeZoneInfo? _tz;
+
+    private int SelectedMonth = DateTime.Now.Month;
+    private int SelectedYear = DateTime.Now.Year;
+    private List<int> AvailableYears = new();
+    private List<shiftModel> FilteredShifts = new();
+
+    // Modal state
+    private bool ShowConfirmModal = false;
+    private string ConfirmMessage = "";
+    private string PendingAction = "";
+
+    private void ShowConfirm(string action)
+    {
+        PendingAction = action;
+        ConfirmMessage = action == "start" ? "هل أنت متأكد أنك تريد بدء وردية جديدة؟" : "هل أنت متأكد أنك تريد إنهاء الوردية الحالية؟";
+        ShowConfirmModal = true;
+    }
+
+    private void CloseConfirm()
+    {
+        ShowConfirmModal = false;
+        PendingAction = "";
+    }
+
+    private async Task ConfirmAction()
+    {
+
+        if (PendingAction == "start")
+            await StartShift();
+        else if (PendingAction == "end")
+            await EndShift();
+        ShowConfirmModal = false;
+        PendingAction = "";
+
+    }
+
+    private void OnMonthChanged(ChangeEventArgs e)
+    {
+        if (int.TryParse(e?.Value?.ToString(), out var m))
+            SelectedMonth = m;
+        ApplyFilter();
+    }
+
+    private void OnYearChanged(ChangeEventArgs e)
+    {
+        if (int.TryParse(e?.Value?.ToString(), out var y))
+            SelectedYear = y;
+        ApplyFilter();
+    }
+
+    private void ApplyFilter()
+    {
+        FilteredShifts = (MyShifts ?? new())
+            .Where(s => s.ShiftStatus == ShiftStatus.Acepted &&
+                        s.StartTime.Month == SelectedMonth &&
+                        s.StartTime.Year == SelectedYear)
+            .OrderByDescending(s => s.StartTime)
+            .ToList();
+    }
+
+    private async Task StartShift()
+    {
+        var phonnumber = await SecureStorage.GetAsync("userPhone");
+        var photo = await MediaPicker.CapturePhotoAsync();
+        if (photo == null) return;
+        ShowConfirmModal = false;
+        PendingAction = "";
+        StateHasChanged();
+        var user = await _userservice.GetUserByPhonNumber(phonnumber);
+        var res = await _shiftservice.AddShiftAsync(user.Value.Id, photo);
+       
+        if (res.IsSucceeded)
+        {
+            var resshift = await _shiftservice.GetUserShiftsAsync(user.Value.Id);
+            CurrentShift = resshift.Value.Where(x => x.ShiftStatus == ShiftStatus.pending).LastOrDefault();
+            ImageLink = $"https://10.0.0.13:7246/api/Shift/ShiftImage/{CurrentShift.Id}";
+        }
+    }
+
+    private async Task EndShift()
+    {
+        var location = await Geolocation.GetLocationAsync();
+        if (location == null || CurrentShift == null) return;
+
+        var res = await _shiftservice.EndShiftAsync(new EndShiftDto
+        {
+            ShiftId = CurrentShift.Id,
+            X = location.Latitude,
+            Y = location.Longitude
+        });
+
+        if (res.IsSucceeded)
+            CurrentShift = null;
+
+        _nav.Refresh(false);
+    }
+    private void UpdateNow()
+    {
+        var utc = DateTime.UtcNow;
+        var now = _tz is null ? utc : TimeZoneInfo.ConvertTimeFromUtc(utc, _tz);
+
+        // الوقت والتاريخ بصيغة احترافية
+        TimeString = now.ToString("HH':'mm':'ss", _he);                                // 14:23:08
+        DateString = now.ToString("dd MMMM yyyy", _he);                                // 20 ספטמבר 2025
+        DayString = now.ToString("dddd", _he);                                        // שבת
+    }
+
+    private static TimeZoneInfo? TryGetTz(string id)
+    {
+        try { return TimeZoneInfo.FindSystemTimeZoneById(id); }
+        catch { return null; }
+    }
+
+    public void Dispose()
+    {
+        try { _cts.Cancel(); } catch { }
+        _timer?.Dispose();
+        _cts.Dispose();
+    }
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _timer = new PeriodicTimer(TimeSpan.FromSeconds(1));
+            while (await _timer.WaitForNextTickAsync(_cts.Token))
+            {
+                UpdateNow();
+                await InvokeAsync(StateHasChanged);
+            }
+        }
+    }
+    protected override async Task OnInitializedAsync()
+    {
+        var phonnumber = await SecureStorage.GetAsync("userPhone");
+        if (!string.IsNullOrEmpty(phonnumber))
+        {
+            var res = await _userservice.GetUserStatusByPhonNumberAsync(phonnumber);
+            if (res.IsSucceeded)
+            {
+                var user = await _userservice.GetUserByPhonNumber(phonnumber);
+                status = user.Value.IsVerfy;
+                isauth = true;
+                MyShifts = (await _shiftservice.GetUserShiftsAsync(user.Value.Id))?.Value ?? new List<shiftModel>();
+                AvailableYears = MyShifts.Select(s => s.StartTime.Year).Distinct().OrderByDescending(y => y).ToList();
+                if (!AvailableYears.Contains(DateTime.Now.Year))
+                    AvailableYears.Insert(0, DateTime.Now.Year);
+
+                ApplyFilter();
+                NumberOfPendingShift = MyShifts.Count(s => s.ShiftStatus == ShiftStatus.pending && s.Latitude != 0);
+                _tz = TryGetTz("Asia/Jerusalem") ?? TryGetTz("Israel Standard Time") ?? TimeZoneInfo.Local;
+                UpdateNow(); // أول تحديث فوري
+                var runningShift = MyShifts.Where(s => s.Longitude == 0 && s.StartTime.DayOfYear == DateTime.UtcNow.DayOfYear).LastOrDefault();
+                if (runningShift != null)
+                    CurrentShift = runningShift;
+            }
+        }
+        IsLoding = false;
+
+    }
+    private void RefreshPage()
+    {
+        _nav.Refresh(forceReload: true);
+    }
+}
+
+<style>
+    /* Modal CSS */
+    .modal-backdrop {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.6);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+    }
+
+    .modal-content {
+        background: #1e1e1e;
+        padding: 20px;
+        border-radius: 12px;
+        width: 90%;
+        max-width: 400px;
+        text-align: center;
+        color: #fff;
+        box-shadow: 0 6px 18px rgba(0,0,0,0.4);
+        animation: fadeIn .3s ease;
+    }
+
+        .modal-content h3 {
+            margin-bottom: 12px;
+            color: #2e5fff;
+        }
+
+    .modal-actions {
+        margin-top: 20px;
+        display: flex;
+        justify-content: center;
+        gap: 10px;
+    }
+
+        .modal-actions .btn {
+            padding: 10px 18px;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            border: none;
+            transition: 0.3s;
+        }
+
+            .modal-actions .btn.primary {
+                background: #2e5fff;
+                color: #fff;
+            }
+
+                .modal-actions .btn.primary:hover {
+                    background: #1d47e0;
+                }
+
+            .modal-actions .btn.secondary {
+                background: transparent;
+                border: 1px solid #555;
+                color: #bbb;
+            }
+
+                .modal-actions .btn.secondary:hover {
+                    border-color: #2e5fff;
+                    color: #fff;
+                }
+    @@keyframes fadeIn {
+        from
+
+    {
+        opacity: 0;
+        transform: scale(.9);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+
+    }
+</style>

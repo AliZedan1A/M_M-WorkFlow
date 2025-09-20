@@ -1,0 +1,112 @@
+﻿@using WorkFlowClient.Services.Class
+@using WorkFlowClient.Services.Interfaces
+@inject LangState Lang
+@inject NavigationManager Nav
+@inject IUserService _userservice
+<header class="app-bar">
+    <div class="brand">
+        <div class="mark">
+            <span class="studio">STUDIO</span><span class="nex">NEX</span>
+        </div>
+        <div class="company">מ.מ גני ניקיון</div>
+    </div>
+
+    <button class="menu-toggle" @onclick="ToggleMobileMenu">☰</button>
+</header>
+
+@if (showMobileMenu)
+{
+    <div class="mobile-menu-backdrop" @onclick="CloseMobileMenu">
+        <div class="mobile-menu show @(Lang.DisplayCode == "ar" || Lang.DisplayCode == "he" ? "rtl" : "ltr")" @onclick:stopPropagation="true">
+
+            <!-- زر إغلاق -->
+            <button class="close-btn" @onclick="CloseMobileMenu">✖</button>
+
+            <!-- هيدر الشركة -->
+            <div class="menu-header">
+                <h2 class="company-name">מ.מ גני ניקיון</h2>
+            </div>
+
+            <!-- اللغة -->
+            <div class="lang-block">
+                <button class="pill big" @onclick="ToggleLangMenu">
+                    🌐 @Lang.DisplayCode
+                </button>
+                @if (showLangMenu)
+                {
+                    <div class="lang-menu">
+                        <button @onclick='() => ChangeLang("he")'>עברית</button>
+                        <button @onclick='() => ChangeLang("ar")'>العربية</button>
+                        <button @onclick='() => ChangeLang("en")'>English</button>
+                    </div>
+                }
+            </div>
+
+            <!-- الخيارات -->
+            <div class="menu-options">
+                <button class="menu-item green" @onclick="GoToHome">
+                    ↩️ <span>Home</span>
+                </button>
+                @if (isauth)
+                {
+                    <button class="menu-item danger" @onclick="GoLogout">
+                        ↩️ <span>@Lang.T("logout")</span>
+                    </button>
+
+                }
+                else
+                {
+                    <button class="menu-item green" @onclick="Login">
+                        ↩️ <span>@Lang.T("Login")</span>
+                    </button>
+                }
+                @if(IsAdmin)
+                {
+                    <button class="menu-item green" @onclick="GoToAdmin">
+                        <span>الادارة</span>
+                    </button>
+                }
+               
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    bool showMobileMenu;
+    bool showLangMenu;
+    bool IsAdmin = false;
+    bool isauth = false;
+    void ToggleMobileMenu() => showMobileMenu = !showMobileMenu;
+    void CloseMobileMenu() => showMobileMenu = false;
+
+    void ToggleLangMenu() => showLangMenu = !showLangMenu;
+    protected override async Task OnInitializedAsync()
+    {
+        var phon = await SecureStorage.GetAsync("userPhone");
+        if (!string.IsNullOrEmpty(phon))
+        {
+            isauth = true;
+        }
+        var user = await _userservice.GetUserByPhonNumber(phon);
+        if(user.IsSucceeded)
+        {
+            IsAdmin = user.Value.IsAdmin;
+        }
+    }
+    void ChangeLang(string code)
+    {
+        Lang.Set(code);
+        showLangMenu = false;
+        StateHasChanged();
+    }
+    void GoToAdmin() => Nav.NavigateTo("/Admin");
+
+    void GoToHome() => Nav.NavigateTo("/");
+    void GoLogout()
+    {
+        SecureStorage.RemoveAll();
+        Nav.Refresh(false);
+    }
+    void Login() => Nav.NavigateTo("/login");
+}

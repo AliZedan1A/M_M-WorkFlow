@@ -1,4 +1,5 @@
 ﻿using Domain.Databases;
+using Domain.DataTransfareObject;
 using Microsoft.EntityFrameworkCore;
 using ServerSide.db;
 using ServerSide.Services.Interfaces;
@@ -18,17 +19,17 @@ namespace ServerSide.Services.Class
             _userservice = userservice;
              _attachmentservice = attachmentService;
         }
-        public async Task<bool> CreateShift(int id, IFormFile file)
+        public async Task<bool> CreateShift(AddShiftDto req)
         {
-            var user = await _userservice.GetUserById(id);
+            var user = await _userservice.GetUserById(req.UserId);
             if (user is null) return false;
-            var image = await _attachmentservice.ConvertFileToPath(file);
+            var image = await _attachmentservice.ConvertFileToPath(req.ImageBytes,req.Extention,req.UserId);
             if (string.IsNullOrEmpty(image)) return false;
             var newmodel = new shiftModel()
             {
                 StartTime = _timeservice.IsraelNow(),
                 ImagePath = image,
-                UserId = id
+                UserId = req.UserId
                 
             };
             try
@@ -101,13 +102,15 @@ namespace ServerSide.Services.Class
             
         }
 
-        public async Task<bool> SetShiftEndTime(int id)
+        public async Task<bool> SetShiftEndTime(int id, double x, double y)
         {
             var model = await GetShift(id);
             if (model is null) return false;
             try
             {
                 model.EndTime = _timeservice.IsraelNow();
+                model.Latitude = x;
+                model.Longitude = y;
                 await SaveChangesAsync();
                 return true;
             }

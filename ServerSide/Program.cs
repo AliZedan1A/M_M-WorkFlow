@@ -16,7 +16,10 @@ builder.Services.AddScoped<IShiftService, ShiftService>();
 builder.Services.AddScoped<AttachmentService>();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
-
+builder.WebHost.ConfigureKestrel(options =>
+{
+    options.Limits.MaxRequestBodySize = 52428800;
+});
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -26,7 +29,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
     app.MapOpenApi();
 }
-
+app.UseStaticFiles();
 app.UseHttpsRedirection();
 
 app.UseAuthorization();

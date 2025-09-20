@@ -6,10 +6,13 @@ namespace ServerSide.Services.Interfaces
     {
        Task<bool> AddUser(string username, string phonnumber);
        Task<VerfyStatus?> GetUserStatus(int Id);
+       Task<UserModel> GetUserByPhonNumber(string phonnumber);
        Task<VerfyStatus?> GetUserStatusByPhonNumber(string phonnumber);
        Task<bool> ModfyVerfyStatus(int Id,VerfyStatus newstatus);
        Task<bool> EditPhonNumberById(int id,string newphonnumber);
        Task<List<UserModel>> GetUsers();
        Task<UserModel> GetUserById(int id);
+        Task<bool> SendOtpCode(string phonnumber, string contrycode);
+        Task<bool> VerfyOtpCode(string code, string phonnumber);
     }
 }

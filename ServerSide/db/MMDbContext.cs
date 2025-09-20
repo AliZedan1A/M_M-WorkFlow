@@ -7,7 +7,7 @@ namespace ServerSide.db
     {
         public DbSet<UserModel> Users { get; set; }
         public DbSet<shiftModel> Shifts { get; set; }
-
+        public DbSet<OtpCode> OtpCodes { get; set; }
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             optionsBuilder.UseMySql(

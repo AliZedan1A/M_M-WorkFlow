@@ -1,0 +1,357 @@
+﻿.home-container {
+    padding: 16px;
+    color: #fff;
+    background: linear-gradient(135deg, #0d0d0d, #1a1a1a);
+    min-height: 100vh;
+}
+
+/* ALERT */
+.alert {
+    padding: 12px 16px;
+    border-radius: 8px;
+    margin-bottom: 16px;
+    font-weight: 500;
+    text-align: center;
+}
+
+.alert-pending {
+    background: rgba(255,193,7,0.15);
+    border: 1px solid #ffc107;
+    color: #ffc107;
+}
+
+.alert-rejected {
+    background: rgba(220,53,69,0.15);
+    border: 1px solid #dc3545;
+    color: #dc3545;
+}
+
+/* TITLE */
+.title {
+    margin: 10px 0 20px;
+    font-size: 24px;
+    font-weight: bold;
+    color: #2e5fff;
+}
+
+/* SHIFT ACTION */
+.shift-box {
+    margin: 20px 0;
+    display: flex;
+    justify-content: center;
+}
+
+.btn-shift {
+    padding: 12px 18px;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 15px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: background 0.3s, transform 0.2s;
+}
+    .btn-shift.action {
+        background: #2e5fff;
+        color: #fff;
+        box-shadow: 0 4px 12px rgba(46, 95, 255, 0.4);
+    }
+        .btn-shift.action:hover {
+            background: #1d47e0;
+            transform: translateY(-2px);
+        }
+        .btn-shift.action.danger {
+            background: #e63946;
+            box-shadow: 0 4px 12px rgba(220, 53, 69, 0.4);
+        }
+            .btn-shift.action.danger:hover {
+                background: #c92a38;
+            }
+
+
+   
+
+.shift-card {
+    background: #141414;
+    border: 1px solid #2e5fff;
+    border-radius: 14px;
+    padding: 20px;
+    max-width: 400px;
+    width: 100%;
+    text-align: center;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+    transition: 0.3s;
+}
+    .shift-card.active {
+        border-color: #ffc107;
+    }
+    .shift-card.idle {
+        border-color: #2e5fff;
+    }
+
+.shift-header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    font-size: 18px;
+    font-weight: bold;
+    margin-bottom: 12px;
+    color: #fff;
+}
+.shift-card p {
+    color: #bbb;
+    margin-bottom: 14px;
+}
+.shift-card .shift-note {
+    font-size: 14px;
+    color: #999;
+}
+
+.shift-proof {
+    width: 100%;
+    max-height: 200px;
+    border-radius: 10px;
+    margin: 12px 0;
+    object-fit: cover;
+    border: 1px solid #333;
+}
+
+
+/* SHIFTS */
+.my-shifts h2 {
+    font-size: 18px;
+    margin-bottom: 12px;
+    color: #2e5fff;
+}
+
+.shift-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.shift-item {
+    background: #141414;
+    border: 1px solid #333;
+    border-radius: 10px;
+    padding: 12px;
+    display: flex;
+    justify-content: space-between;
+    font-size: 14px;
+}
+
+.info-box {
+    margin-top: 10px;
+    background: #222;
+    padding: 10px;
+    border-radius: 8px;
+    font-size: 13px;
+    color: #bbb;
+}
+
+/* EMPTY */
+.empty {
+    color: #aaa;
+    text-align: center;
+    margin-top: 10px;
+}
+
+/* GUEST */
+.guest-box {
+    text-align: center;
+    margin-top: 40px;
+}
+
+    .guest-box .title {
+        font-size: 26px;
+        margin-bottom: 8px;
+    }
+
+    .guest-box .subtitle {
+        color: #aaa;
+        margin-bottom: 20px;
+        font-size: 15px;
+    }
+
+.guest-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    max-width: 220px;
+    margin: auto;
+}
+
+.btn {
+    padding: 12px;
+    border-radius: 10px;
+    font-weight: bold;
+    text-decoration: none;
+    transition: 0.3s;
+    text-align: center;
+}
+
+    .btn.primary {
+        background: #2e5fff;
+        color: #fff;
+    }
+
+        .btn.primary:hover {
+            background: #1d47e0;
+        }
+
+    .btn.secondary {
+        border: 1px solid #555;
+        color: #bbb;
+    }
+
+        .btn.secondary:hover {
+            border-color: #2e5fff;
+            color: #fff;
+        }
+.shifts-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.shift-filter {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    background: #1a1a1a;
+    padding: 6px 10px;
+    border-radius: 8px;
+    border: 1px solid #333;
+}
+
+    .shift-filter select {
+        background: #141414;
+        color: #fff;
+        border: 1px solid #444;
+        border-radius: 6px;
+        padding: 4px 8px;
+    }
+
+    .shift-filter .count {
+        font-weight: bold;
+        color: #2e5fff;
+    }
+.clock-card {
+    background: linear-gradient(135deg, #101010, #181818);
+    border: 1px solid #2d2d2d;
+    border-radius: 16px;
+    padding: 18px 22px;
+    color: #f5f6f7;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.5);
+    margin: 18px auto;
+    max-width: 95%;
+    transition: transform .2s ease, box-shadow .2s ease;
+}
+
+    .clock-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 26px rgba(0, 0, 0, 0.6);
+    }
+
+.clock-row {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.clock-time {
+    font-size: 34px;
+    font-weight: 800;
+    letter-spacing: 1px;
+    color: #2e8cff; /* أزرق مؤسسي */
+    text-shadow: 0 0 6px rgba(46, 140, 255, 0.5);
+}
+
+.clock-date {
+    font-size: 18px;
+    font-weight: 600;
+    color: #ddd;
+}
+
+.clock-sep {
+    margin: 0 8px;
+    color: #666;
+}
+
+.clock-sub {
+    margin-top: 10px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #aaa;
+    text-align: right;
+    border-top: 1px solid #2a2a2a;
+    padding-top: 8px;
+    line-height: 1.4;
+}
+
+/* أنميشن للتوقيت */
+@keyframes pulse {
+    0%, 100% {
+        text-shadow: 0 0 6px rgba(46, 140, 255, 0.4);
+    }
+
+    50% {
+        text-shadow: 0 0 14px rgba(46, 140, 255, 0.8);
+    }
+}
+
+.clock-time {
+    animation: pulse 2s infinite;
+}
+.welcome-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between; /* إذا بدك الأيقونة بعيدة */
+    gap: 10px; /* إذا بدك الأيقونة قريبة من النص */
+}
+
+.title {
+    margin: 0;
+    font-size: 24px;
+    font-weight: bold;
+    color: #2e5fff;
+}
+
+/* زر الريفريش الدائري */
+.btn-refresh {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: #1e1e1e;
+    border: 1px solid #2e5fff;
+    color: #2e5fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: 0.3s ease;
+}
+
+    .btn-refresh:hover {
+        background: #2e5fff;
+        color: #fff;
+        box-shadow: 0 0 8px rgba(46, 95, 255, 0.5);
+    }
+
+    .btn-refresh i {
+        font-size: 16px;
+        transition: transform 0.4s linear;
+    }
+
+    /* دوران الأيقونة عند الضغط */
+    .btn-refresh:active i {
+        transform: rotate(180deg);
+    }

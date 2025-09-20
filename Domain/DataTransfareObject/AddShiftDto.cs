@@ -7,6 +7,7 @@ namespace Domain.DataTransfareObject
     public class AddShiftDto
     {
         public int UserId { get; set; }
-        public IFormFile File { get; set; }
+        public byte[] ImageBytes { get; set; }
+        public string Extention { get; set; }
     }
 }

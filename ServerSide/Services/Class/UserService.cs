@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using ServerSide.db;
 using ServerSide.Services.Interfaces;
+using System.Text.RegularExpressions;
 
 namespace ServerSide.Services.Class
 {
@@ -20,6 +21,10 @@ namespace ServerSide.Services.Class
             {
                 return false;
             }
+            var IsPhonNumberAvailble = !await _dbcontext.Users.AnyAsync(x=>x.PhonNumber == phonnumber);
+            if (IsPhonNumberAvailble) { 
+            
+            
             var newmodel = new UserModel()
             {
                 IsAdmin = false,
@@ -34,6 +39,11 @@ namespace ServerSide.Services.Class
                 return true;
             }
             catch (Exception ex)
+            {
+                return false;
+            }
+            }
+            else
             {
                 return false;
             }
@@ -128,6 +138,71 @@ namespace ServerSide.Services.Class
                     return false;
                 }
             
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        public async Task<UserModel> GetUserByPhonNumber(string phonnumber)
+        {
+            var user = await _dbcontext.Users.FirstOrDefaultAsync(x => x.PhonNumber == phonnumber);
+            if (user != null)
+            {
+                return user;
+            }
+            return null;
+
+        }
+
+        public async Task<bool> SendOtpCode(string phonnumber , string contrycode)
+        {
+            string pattern = @"^(?:0)?(\d{2})(\d{3})(\d{4})$";
+            string replacement = "$1-$2-$3";
+
+            string result = Regex.Replace(phonnumber, pattern, replacement);
+
+            if (!Regex.IsMatch(phonnumber, @"^\d{10}$"))
+            {
+                return false;
+            }
+            try
+            {
+                Random random = new Random();
+                var code = random.Next(1000, 9999);
+                //sendcode
+                var user = await GetUserByPhonNumber(phonnumber);
+                if (user != null)
+                {
+                    _dbcontext.OtpCodes.Add(new()
+                    {
+                        Code = code.ToString(),
+                        UserId = user.Id
+
+                    });
+                    await SaveChangesAsync();
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+            catch
+            {
+                return false;
+            }
+
+        }
+
+        public async Task<bool> VerfyOtpCode(string code, string phonnumber)
+        {
+            var user =  await GetUserByPhonNumber(phonnumber);
+            if (user != null) {
+                bool IsCorrect = await _dbcontext.OtpCodes.Where(x => x.UserId == user.Id)
+                    .AnyAsync(x=>x.Code == code && x.ExpireTime> DateTime.UtcNow );
+                return IsCorrect;
             }
             else
             {

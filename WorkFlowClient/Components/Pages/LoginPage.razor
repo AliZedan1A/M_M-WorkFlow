@@ -1,0 +1,134 @@
+﻿@page "/login"
+@using Domain.DataTransfareObject
+@using WorkFlowClient.Services.Interfaces
+@inject NavigationManager Nav
+@inject IUserService _userservice
+
+<div class="login-page">
+    <div class="login-card">
+        <h2>تسجيل الدخول برمز تحقق (OTP)</h2>
+
+        @if (!IsCodeSent)
+        {
+            <p class="subtitle">الرجاء اختيار الدولة وإدخال رقم هاتفك لإرسال رمز تحقق.</p>
+
+            <div class="form-group">
+                <label>الدولة</label>
+                <select @bind="SelectedCountry">
+                    <option value="+970">🇵🇸 الضفة الغربية</option>
+                    <option value="+972">🇮🇱 إسرائيل</option>
+                    <option value="+962">🇯🇴 الأردن</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>رقم الهاتف</label>
+                <input type="tel" @bind="PhoneNumber" placeholder="5XXXXXXXX" />
+            </div>
+
+            <button class="btn-login" @onclick="SendCode" disabled="@IsSending">
+                @(IsSending ? "جاري الإرسال..." : "إرسال الكود")
+            </button>
+        }
+        else
+        {
+            <p class="subtitle">تم إرسال الكود إلى <b>@SelectedCountry @PhoneNumber</b>. يرجى إدخاله أدناه.</p>
+
+            <div class="form-group">
+                <label>رمز التحقق</label>
+                <input type="text" maxlength="6" @bind="OtpCode" placeholder="XXXXXX" />
+            </div>
+
+            <button class="btn-login" @onclick="VerifyCode" disabled="@IsVerifying">
+                @(IsVerifying ? "جاري التحقق..." : "تأكيد الكود")
+            </button>
+
+            <div class="resend-box">
+                @if (CanResend)
+                {
+                    <button class="btn-resend" @onclick="SendCode">🔄 إعادة إرسال الكود</button>
+                }
+                else
+                {
+                    <span>يمكنك إعادة الإرسال بعد: @RemainingSeconds ثانية</span>
+                }
+            </div>
+        }
+    </div>
+</div>
+
+@code {
+    private string PhoneNumber { get; set; } = "";
+    private string SelectedCountry { get; set; } = "+970"; // default الضفة
+    private string OtpCode { get; set; } = "";
+
+    private bool IsCodeSent = false;
+    private bool IsSending = false;
+    private bool IsVerifying = false;
+
+    private bool CanResend = false;
+    private int RemainingSeconds = 60;
+    private System.Timers.Timer? CountdownTimer;
+
+    private async Task SendCode()
+    {
+        if (string.IsNullOrWhiteSpace(PhoneNumber)) return;
+        IsSending = true;
+
+        var res = await _userservice.SendVerfyCode(new SendVerfyCodeDto
+        {
+            PhonNumber = PhoneNumber,
+            ContryCode = SelectedCountry
+        });
+
+        IsSending = false;
+        if (res.IsSucceeded && res.Value)
+        {
+            IsCodeSent = true;
+            StartCountdown();
+        }
+    }
+
+    private async Task VerifyCode()
+    {
+        if (string.IsNullOrWhiteSpace(OtpCode)) return;
+        IsVerifying = true;
+
+        var res = await _userservice.CheckCode(new CheckVerfyCode
+        {
+            PhonNumber = PhoneNumber,
+            Code = OtpCode
+        });
+
+        IsVerifying = false;
+        if (res.IsSucceeded && res.Value)
+        {
+            await SecureStorage.SetAsync("userPhone", PhoneNumber);
+            Nav.NavigateTo("/");
+        }
+    }
+
+    private void StartCountdown()
+    {
+        RemainingSeconds = 60;
+        CanResend = false;
+
+        CountdownTimer?.Dispose();
+        CountdownTimer = new System.Timers.Timer(1000);
+        CountdownTimer.Elapsed += (s, e) =>
+        {
+            if (RemainingSeconds > 0)
+            {
+                RemainingSeconds--;
+                InvokeAsync(StateHasChanged);
+            }
+            else
+            {
+                CanResend = true;
+                CountdownTimer.Stop();
+                InvokeAsync(StateHasChanged);
+            }
+        };
+        CountdownTimer.Start();
+    }
+}

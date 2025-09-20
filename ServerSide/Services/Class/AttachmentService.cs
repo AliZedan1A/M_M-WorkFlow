@@ -4,25 +4,18 @@
     {
         private static string BasePath = "\\workflowimages";
 
-        public async Task<string> ConvertFileToPath(IFormFile file)
+        public async Task<string> ConvertFileToPath(byte[] imageBytes, string extension, int userId)
         {
             if (!Directory.Exists(BasePath))
                 Directory.CreateDirectory(BasePath);
-            string randomString = Guid.NewGuid().ToString();
-            string fullpath = Path.Combine(BasePath, randomString + file.FileName);
-            using (var stream = new FileStream(fullpath, FileMode.Create))
-            {
-                try
-                {
-                    await file.CopyToAsync(stream);
-                    return fullpath;
 
-                }
-                catch (Exception ex)
-                {
-                    return string.Empty;
-                }
-            }
+            string randomString = Guid.NewGuid().ToString();
+            string filename = $"{userId}_{randomString}.{extension}";
+            string fullpath = Path.Combine(BasePath, filename);
+
+            await File.WriteAllBytesAsync(fullpath, imageBytes);
+
+            return fullpath; 
         }
     }
 }

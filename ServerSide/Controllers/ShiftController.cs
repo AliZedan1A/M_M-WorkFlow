@@ -1,6 +1,7 @@
 ﻿using Domain.DataTransfareObject;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using ServerSide.Services.Class;
 using ServerSide.Services.Interfaces;
 
 namespace ServerSide.Controllers
@@ -14,17 +15,51 @@ namespace ServerSide.Controllers
         {
             _shiftService = shiftService;
         }
-        [HttpPost]
-        public async Task<IActionResult>AddShift([FromForm]AddShiftDto req)
+        [HttpGet]
+        public async Task<IActionResult>GetAllShifts()
         {
-            var response = await _shiftService.CreateShift(req.UserId, req.File);
+            var response = await _shiftService.GetShifts();
+            return Ok(response);
+        }
+        [HttpGet("{id:int}")]
+        public async Task<IActionResult>GetShift(int id)
+        {
+            var response = await _shiftService.GetShift(id);
+            return response !=null ? Ok(response) : NotFound();
+        }
+
+        [HttpPost]
+        public async Task<IActionResult>AddShift([FromBody]AddShiftDto req)
+        {
+            var response = await _shiftService.CreateShift(req);
             return response ? Ok():BadRequest();
         }
-        [HttpPut]
+        [HttpPut("EndShift")]
+        public async Task<IActionResult>  EndShift(EndShiftDto req)
+        {
+            var response = await _shiftService.SetShiftEndTime(req.ShiftId,req.X,req.Y);
+            return response?Ok():BadRequest();
+        }
+        [HttpPut("ModfyStatus")]
         public async Task<IActionResult> ModfiyShiftStatus(ModfiyShiftStatusDto req)
         {
           var response = await   _shiftService.UpdateShiftStatus(req.ShiftId, req.NewStatus);
             return response ? Ok() : BadRequest();
+        }
+        [HttpGet("GetUserShift/{userid:int}")]
+        public async Task<IActionResult> GetUserShifts(int userid)
+        {
+            var response = await _shiftService.GetUserShift(userid);
+            return response is not null ? Ok(response) : NotFound();
+
+        }
+        [HttpGet("ShiftImage/{id}")]
+        public async Task<IActionResult> ShiftImage(int id)
+        {
+            var model = await _shiftService.GetShift(id);
+            var contentType = "image/jpg";
+            var stream = System.IO.File.OpenRead(model.ImagePath);
+            return File(stream, contentType);
         }
     }
 }

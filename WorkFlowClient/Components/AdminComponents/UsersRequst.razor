@@ -1,0 +1,67 @@
+﻿@using Domain.Databases
+@using Domain.DataTransfareObject
+@using WorkFlowClient.Services.Interfaces
+@inject IUserService _userservice
+
+<div class="users-requests">
+    <h3>طلبات تفعيل المستخدمين</h3>
+
+    @if (isLoading)
+    {
+        <p>⏳ جاري تحميل الطلبات...</p>
+    }
+    else if (PendingUsers?.Any() != true)
+    {
+        <p class="empty">لا يوجد طلبات حالياً.</p>
+    }
+    else
+    {
+        <div class="users-list">
+            @foreach (var user in PendingUsers)
+            {
+                <div class="user-card">
+                    <div class="info">
+                        <strong>@user.Name</strong>
+                        <span>@user.PhonNumber</span>
+                    </div>
+                    <div class="actions">
+                        <button class="btn accept" @onclick="() => ChangeStatus(user.Id, VerfyStatus.Active)">قبول</button>
+                        <button class="btn reject" @onclick="() => ChangeStatus(user.Id, VerfyStatus.rejected)">رفض</button>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+@code {
+    private List<UserModel> PendingUsers = new();
+    private bool isLoading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var res = await _userservice.GetUsersAsync();
+        if (res.IsSucceeded && res.Value != null)
+        {
+            PendingUsers = res.Value
+                .Where(u => u.IsVerfy == VerfyStatus.pending)
+                .ToList();
+        }
+        isLoading = false;
+    }
+
+    private async Task ChangeStatus(int userId, VerfyStatus status)
+    {
+        var res = await _userservice.ChangeStatusAsync(new ChangeStatusDto
+        {
+            UserId = userId,
+            NewStatus = status
+        });
+
+        if (res.IsSucceeded)
+        {
+            PendingUsers = PendingUsers.Where(u => u.Id != userId).ToList(); // احذف من الليست
+            StateHasChanged();
+        }
+    }
+}

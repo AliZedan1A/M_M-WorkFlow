@@ -20,6 +20,12 @@ namespace ServerSide.Controllers
             var response = await _userService.AddUser(req.UserName, req.PhonNunber);
             return response ? Ok():BadRequest();
         }
+        [HttpGet("GetUserStatusbyphonnumber/{phonnumber}")]
+        public async Task<IActionResult> GetUserStatusByPhonNumber(string phonnumber)
+        {
+            var response = await _userService.GetUserStatusByPhonNumber(phonnumber);
+            return response !=null ? Ok(response) : BadRequest();
+        }
         [HttpPut]
         public async Task<IActionResult> ChangeStatus(ChangeStatusDto req)
         {
@@ -37,6 +43,24 @@ namespace ServerSide.Controllers
         {
             var response = await _userService.GetUsers();
             return response is not null ? Ok(response) : BadRequest();
+        }
+        [HttpGet("GetUserByPhonNumber/{phonnumber}")]
+        public async Task<IActionResult> GetUserByPhonNumber(string phonnumber)
+        {
+            var response = await _userService.GetUserByPhonNumber(phonnumber);
+            return response is not null ? Ok(response) : BadRequest();
+        }
+        [HttpPost("SendVerfyCode")]
+        public async Task<IActionResult> SendVerfyCode(SendVerfyCodeDto req)
+        {
+            var response = await _userService.SendOtpCode(req.PhonNumber,req.ContryCode);
+            return response  ? Ok() : BadRequest();
+        }
+        [HttpPost("CheckVerfyCode")]
+        public async Task<IActionResult> CheckVerfyCode(CheckVerfyCode req)
+        {
+            var response = await _userService.VerfyOtpCode(req.Code, req.PhonNumber);
+            return response ? Ok() : BadRequest();
         }
 
 

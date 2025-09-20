@@ -22,6 +22,31 @@ namespace ServerSide.Migrations
 
             MySqlModelBuilderExtensions.AutoIncrementColumns(modelBuilder);
 
+            modelBuilder.Entity("Domain.Databases.OtpCode", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<DateTime>("ExpireTime")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("OtpCodes");
+                });
+
             modelBuilder.Entity("Domain.Databases.UserModel", b =>
                 {
                     b.Property<int>("Id")
@@ -64,6 +89,12 @@ namespace ServerSide.Migrations
                         .IsRequired()
                         .HasColumnType("longtext");
 
+                    b.Property<double>("Latitude")
+                        .HasColumnType("double");
+
+                    b.Property<double>("Longitude")
+                        .HasColumnType("double");
+
                     b.Property<int>("ShiftStatus")
                         .HasColumnType("int");
 
@@ -80,6 +111,17 @@ namespace ServerSide.Migrations
                     b.ToTable("Shifts");
                 });
 
+            modelBuilder.Entity("Domain.Databases.OtpCode", b =>
+                {
+                    b.HasOne("Domain.Databases.UserModel", "User")
+                        .WithMany("OtpCodes")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("Domain.Databases.shiftModel", b =>
                 {
                     b.HasOne("Domain.Databases.UserModel", "User")
@@ -93,6 +135,8 @@ namespace ServerSide.Migrations
 
             modelBuilder.Entity("Domain.Databases.UserModel", b =>
                 {
+                    b.Navigation("OtpCodes");
+
                     b.Navigation("Shifts");
                 });
 #pragma warning restore 612, 618
