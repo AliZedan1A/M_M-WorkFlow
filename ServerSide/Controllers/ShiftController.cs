@@ -57,7 +57,7 @@ namespace ServerSide.Controllers
         public async Task<IActionResult> ShiftImage(int id)
         {
             var model = await _shiftService.GetShift(id);
-            var contentType = "image/jpg";
+            var contentType = "image/jpeg";
             var stream = System.IO.File.OpenRead(model.ImagePath);
             return File(stream, contentType);
         }

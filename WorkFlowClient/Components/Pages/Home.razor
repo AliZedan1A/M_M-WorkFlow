@@ -78,13 +78,14 @@ else
                         <span>وردية جارية</span>
                     </div>
                     <p>بدأت عند: <b>@CurrentShift.StartTime.ToString("HH:mm")</b></p>
-                    <img src="@ImageLink" alt="proof" class="shift-proof" />
+                            <img src="@($"https://localhost:7246/api/Shift/ShiftImage/{CurrentShift.Id}")" alt="proof" class="shift-proof" />
                     <button class="btn-shift action danger" @onclick="@(() => ShowConfirm("end"))">
                         <i class="fas fa-stop-circle"></i> إنهاء الوردية
                     </button>
                 </div>
             }
         </div>
+                    <p class="empty">انت تملك @NumberOfPendingShift ورديات باٍنتظار القبول</p>
 
         <!-- MY SHIFTS -->
         <section class="my-shifts">
@@ -133,7 +134,6 @@ else
             {
                 <p class="empty">لا يوجد لديك ورديات مقبولة في هذا الشهر.</p>
             }
-            <p class="empty">انت تملك @NumberOfPendingShift ورديات باٍنتظار القبول</p>
         </section>
     }
 }
@@ -258,7 +258,7 @@ else
         {
             var resshift = await _shiftservice.GetUserShiftsAsync(user.Value.Id);
             CurrentShift = resshift.Value.Where(x => x.ShiftStatus == ShiftStatus.pending).LastOrDefault();
-            ImageLink = $"https://10.0.0.13:7246/api/Shift/ShiftImage/{CurrentShift.Id}";
+            ImageLink = $"https://localhost:7246/api/Shift/ShiftImage/{CurrentShift.Id}";
         }
     }
 
@@ -322,6 +322,7 @@ else
             var res = await _userservice.GetUserStatusByPhonNumberAsync(phonnumber);
             if (res.IsSucceeded)
             {
+
                 var user = await _userservice.GetUserByPhonNumber(phonnumber);
                 status = user.Value.IsVerfy;
                 isauth = true;
@@ -333,8 +334,12 @@ else
                 ApplyFilter();
                 NumberOfPendingShift = MyShifts.Count(s => s.ShiftStatus == ShiftStatus.pending && s.Latitude != 0);
                 _tz = TryGetTz("Asia/Jerusalem") ?? TryGetTz("Israel Standard Time") ?? TimeZoneInfo.Local;
+                var todayInIsrael = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, _tz).Date;
+
                 UpdateNow(); // أول تحديث فوري
-                var runningShift = MyShifts.Where(s => s.Longitude == 0 && s.StartTime.DayOfYear == DateTime.UtcNow.DayOfYear).LastOrDefault();
+                var runningShift = MyShifts
+                    .Where(s => s.Longitude == 0 && s.StartTime.Date == todayInIsrael)
+                    .LastOrDefault();
                 if (runningShift != null)
                     CurrentShift = runningShift;
             }

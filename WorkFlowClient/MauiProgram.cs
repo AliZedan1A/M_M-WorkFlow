@@ -22,7 +22,7 @@ namespace WorkFlowClient
             builder.Services.AddScoped<IShiftService, ShiftService>();
             builder.Services.AddHttpClient("Server", client =>
             {
-                client.BaseAddress = new Uri("https://10.0.0.13:7246/api/");//https://hairbello.site
+                client.BaseAddress = new Uri("https://localhost:7246/api/");//https://hairbello.site
               
             }).ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler
             {

@@ -38,10 +38,10 @@
 
                         <div class="shift-media">
                             <!-- صورة الإثبات -->
-@*                             <img src="https://10.0.0.13:7246/api/Shift/getImage/{@shift.Id}"
+                            <img src="@($"https://localhost:7246/api/Shift/ShiftImage/{shift.Id}")"
                                  alt="إثبات الشيفت"
-                                 style="max-width:100%;border-radius:8px;" />  
- *@                            @if (shift.Latitude != 0 && shift.Longitude != 0)
+                                 style="max-width:300px; max-height:300px; border-radius:8px; object-fit:contain;" />
+                            @if (shift.Latitude != 0 && shift.Longitude != 0)
                             {
                             <iframe width="100%"
                                     height="200"
