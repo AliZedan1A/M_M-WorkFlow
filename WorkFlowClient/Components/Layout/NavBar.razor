@@ -38,6 +38,7 @@
                         <button @onclick='() => ChangeLang("he")'>עברית</button>
                         <button @onclick='() => ChangeLang("ar")'>العربية</button>
                         <button @onclick='() => ChangeLang("en")'>English</button>
+                        <button @onclick='() => ChangeLang("ti")'>ትግርኛ</button>
                     </div>
                 }
             </div>
@@ -45,7 +46,7 @@
             <!-- الخيارات -->
             <div class="menu-options">
                 <button class="menu-item green" @onclick="GoToHome">
-                    ↩️ <span>Home</span>
+                    ↩️ <span>@Lang.T("home")</span>
                 </button>
                 @if (isauth)
                 {
@@ -83,6 +84,11 @@
     void ToggleLangMenu() => showLangMenu = !showLangMenu;
     protected override async Task OnInitializedAsync()
     {
+        var lang = await SecureStorage.GetAsync("Lang");
+        if(!string.IsNullOrEmpty(lang))
+        {
+            ChangeLang(lang);
+        }
         var phon = await SecureStorage.GetAsync("userPhone");
         if (!string.IsNullOrEmpty(phon))
         {
@@ -94,19 +100,33 @@
             IsAdmin = user.Value.IsAdmin;
         }
     }
-    void ChangeLang(string code)
+    async void ChangeLang(string code)
     {
         Lang.Set(code);
+        await SecureStorage.SetAsync("Lang",code);
         showLangMenu = false;
         StateHasChanged();
+        
     }
-    void GoToAdmin() => Nav.NavigateTo("/Admin");
+    void GoToAdmin()
+    {
+        CloseMobileMenu();
+        Nav.NavigateTo("/Admin");
+    }
 
-    void GoToHome() => Nav.NavigateTo("/");
+    void GoToHome()
+    {
+        CloseMobileMenu();
+        Nav.NavigateTo("/");
+    }
     void GoLogout()
     {
-        SecureStorage.RemoveAll();
+        SecureStorage.Remove("userPhone");
         Nav.Refresh(false);
     }
-    void Login() => Nav.NavigateTo("/login");
+    void Login()
+    {
+        CloseMobileMenu();
+        Nav.NavigateTo("/login");
+    }
 }

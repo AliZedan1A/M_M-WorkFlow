@@ -53,7 +53,7 @@ namespace ServerSide.Controllers
         [HttpPost("SendVerfyCode")]
         public async Task<IActionResult> SendVerfyCode(SendVerfyCodeDto req)
         {
-            var response = await _userService.SendOtpCode(req.PhonNumber,req.ContryCode);
+            var response = await _userService.SendOtpCode(req.PhonNumber,req.ContryCode,req.UserName);
             return response  ? Ok() : BadRequest();
         }
         [HttpPost("CheckVerfyCode")]

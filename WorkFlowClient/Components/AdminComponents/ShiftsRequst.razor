@@ -54,10 +54,18 @@
                         </div>
                     </div>
 
-                    <div class="shift-actions">
-                        <button class="btn accept" @onclick="() => ChangeStatus(shift.Id, ShiftStatus.Acepted)">قبول</button>
-                        <button class="btn reject" @onclick="() => ChangeStatus(shift.Id, ShiftStatus.referd)">رفض</button>
-                    </div>
+                    @if(UserId!=null)
+                    {
+                        <h3 class="empty">@shift.ShiftStatus</h3>
+                    }
+                    else
+                    {
+                        <div class="shift-actions">
+                            <button class="btn accept" @onclick="() => ChangeStatus(shift.Id, ShiftStatus.Acepted)">قبول</button>
+                            <button class="btn reject" @onclick="() => ChangeStatus(shift.Id, ShiftStatus.referd)">رفض</button>
+                        </div>
+                    }
+                  
                 </div>
             }
         </div>
@@ -65,11 +73,32 @@
 </div>
 
 @code {
+    [Parameter]
+    public int? UserId { get; set; }
     private List<shiftModel> PendingShifts = new();
     private bool isLoading = true;
 
     protected override async Task OnInitializedAsync()
     {
+        if(UserId!=null)
+        {
+            var rslt = await _shiftservice.GetUserShiftsAsync(UserId.Value);
+            if(rslt.IsSucceeded)
+            {
+                foreach (var shift in rslt.Value)
+                {
+                    var userRes = await _userservice.GetUserByIdAsync(shift.UserId);
+                    if (userRes.IsSucceeded)
+                        shift.User = userRes.Value;
+                }
+                PendingShifts = rslt.Value;
+
+            }
+        }
+        else
+        {
+            
+        
         var res = await _shiftservice.GetAllShiftsAsync();
         if (res.IsSucceeded && res.Value != null)
         {
@@ -86,6 +115,7 @@
             }
 
             PendingShifts = all;
+        }
         }
         isLoading = false;
     }

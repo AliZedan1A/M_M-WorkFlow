@@ -1,5 +1,104 @@
-﻿<h3>UserMangment</h3>
+﻿@using Domain.DataTransfareObject
+@using Domain.Databases
+@using WorkFlowClient.Services.Interfaces
+@inject IUserService _userservice
+@inject NavigationManager Nav
+
+<div class="user-mgmt">
+    <h2>📋 إدارة المستخدمين</h2>
+
+    @if (Users == null)
+    {
+        <p class="loading">جاري تحميل المستخدمين...</p>
+    }
+    else if (!Users.Any())
+    {
+        <p class="empty">لا يوجد مستخدمين مسجلين بعد.</p>
+    }
+    else
+    {
+        <table class="user-table">
+            <thead>
+                <tr>
+                    <th>الاسم</th>
+                    <th>رقم الهاتف</th>
+                    <th>الحالة</th>
+                    <th>إجراءات</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var user in Users)
+                {
+                    <tr>
+                        <td>@user.Name</td>
+                        <td>@user.PhonNumber</td>
+                        <td>
+                            <select @onchange="e => ChangeStatus(user.Id, e.Value?.ToString())"
+                                    value="@user.IsVerfy.ToString()">
+                                @foreach (var status in Enum.GetValues<VerfyStatus>())
+                                {
+                                    <option value="@status" selected="@(status == user.IsVerfy)">
+                                        @status
+                                    </option>
+                                }
+                            </select>
+                        </td>
+                        <td class="actions">
+                            <button class="btn small info" @onclick="() => GoToShifts(user.Id)">
+                                🗓️ شيفتاته
+                            </button>
+                            <a class="btn small call" href="tel:@user.PhonNumber">
+                                📞 اتصال
+                            </a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+</div>
 
 @code {
+    [Parameter]
+    public EventCallback<int> OnViewShifts { get; set; }
 
+    private List<UserModel>? Users;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var res = await _userservice.GetUsersAsync();
+        if (res.IsSucceeded)
+        {
+            Users = res.Value;
+        }
+        else
+        {
+            Users = new List<UserModel>();
+        }
+    }
+
+    private async Task ChangeStatus(int userId, string? newStatusStr)
+    {
+        if (Enum.TryParse<VerfyStatus>(newStatusStr, out var newStatus))
+        {
+            var dto = new ChangeStatusDto
+            {
+                UserId = userId,
+                NewStatus = newStatus
+            };
+
+            var res = await _userservice.ChangeStatusAsync(dto);
+            if (res.IsSucceeded)
+            {
+                var user = Users?.FirstOrDefault(u => u.Id == userId);
+                if (user != null) user.IsVerfy = newStatus;
+                StateHasChanged();
+            }
+        }
+    }
+
+    private void GoToShifts(int userId)
+    {
+        OnViewShifts.InvokeAsync(userId);
+    }
 }

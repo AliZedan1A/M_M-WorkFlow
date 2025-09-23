@@ -156,8 +156,27 @@ namespace ServerSide.Services.Class
 
         }
 
-        public async Task<bool> SendOtpCode(string phonnumber , string contrycode)
+        public async Task<bool> SendOtpCode(string phonnumber , string contrycode, string username)
         {
+            var userreq = await GetUserByPhonNumber(phonnumber);
+            if (userreq is null)
+            {
+                try
+                {
+                    _dbcontext.Users.Add(new UserModel()
+                    {
+                        Name = username,
+                        PhonNumber = phonnumber,
+
+                    });
+                    await SaveChangesAsync();
+                }
+                catch
+                {
+                    return false;
+                }
+            
+            }
             string pattern = @"^(?:0)?(\d{2})(\d{3})(\d{4})$";
             string replacement = "$1-$2-$3";
 
@@ -171,8 +190,9 @@ namespace ServerSide.Services.Class
             {
                 Random random = new Random();
                 var code = random.Next(1000, 9999);
-                //sendcode
                 var user = await GetUserByPhonNumber(phonnumber);
+
+                //sendcode
                 if (user != null)
                 {
                     _dbcontext.OtpCodes.Add(new()

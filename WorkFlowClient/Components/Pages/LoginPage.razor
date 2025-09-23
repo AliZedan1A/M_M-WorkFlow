@@ -3,54 +3,60 @@
 @using WorkFlowClient.Services.Interfaces
 @inject NavigationManager Nav
 @inject IUserService _userservice
+@inject WorkFlowClient.Services.Class.LangState Lang
 
 <div class="login-page">
     <div class="login-card">
-        <h2>تسجيل الدخول برمز تحقق (OTP)</h2>
+        <h2>@Lang.T("otpLogin")</h2>
 
         @if (!IsCodeSent)
         {
-            <p class="subtitle">الرجاء اختيار الدولة وإدخال رقم هاتفك لإرسال رمز تحقق.</p>
+            <p class="subtitle">@Lang.T("otpSubtitle")</p>
 
             <div class="form-group">
-                <label>الدولة</label>
+                <label>@Lang.T("otpCountry")</label>
                 <select @bind="SelectedCountry">
-                    <option value="+970">🇵🇸 الضفة الغربية</option>
-                    <option value="+972">🇮🇱 إسرائيل</option>
-                    <option value="+962">🇯🇴 الأردن</option>
+                    <option value="+970">@Lang.T("ws")</option>
+                    <option value="+972">@Lang.T("il")</option>
+                    <option value="+962">@Lang.T("jo")</option>
                 </select>
             </div>
 
             <div class="form-group">
-                <label>رقم الهاتف</label>
+                <label>@Lang.T("otpUsername")</label>
+                <input type="text" @bind="username" placeholder="User Name" />
+            </div>
+
+            <div class="form-group">
+                <label>@Lang.T("otpPhone")</label>
                 <input type="tel" @bind="PhoneNumber" placeholder="5XXXXXXXX" />
             </div>
 
             <button class="btn-login" @onclick="SendCode" disabled="@IsSending">
-                @(IsSending ? "جاري الإرسال..." : "إرسال الكود")
+                @(IsSending? Lang.T("otpSending") : Lang.T("otpSend"))
             </button>
         }
         else
         {
-            <p class="subtitle">تم إرسال الكود إلى <b>@SelectedCountry @PhoneNumber</b>. يرجى إدخاله أدناه.</p>
+            <p class="subtitle">@string.Format(Lang.T("otpSentTo"), SelectedCountry, PhoneNumber)</p>
 
             <div class="form-group">
-                <label>رمز التحقق</label>
+                <label>@Lang.T("otpCode")</label>
                 <input type="text" maxlength="6" @bind="OtpCode" placeholder="XXXXXX" />
             </div>
 
             <button class="btn-login" @onclick="VerifyCode" disabled="@IsVerifying">
-                @(IsVerifying ? "جاري التحقق..." : "تأكيد الكود")
+                @(IsVerifying? Lang.T("otpVerifying") : Lang.T("otpConfirm"))
             </button>
 
             <div class="resend-box">
                 @if (CanResend)
                 {
-                    <button class="btn-resend" @onclick="SendCode">🔄 إعادة إرسال الكود</button>
+                    <button class="btn-resend" @onclick="SendCode">@Lang.T("otpResend")</button>
                 }
                 else
                 {
-                    <span>يمكنك إعادة الإرسال بعد: @RemainingSeconds ثانية</span>
+                    <span>@string.Format(Lang.T("otpResendAfter"), RemainingSeconds)</span>
                 }
             </div>
         }
@@ -62,6 +68,7 @@
     private string SelectedCountry { get; set; } = "+970"; // default الضفة
     private string OtpCode { get; set; } = "";
 
+    private string username = "";
     private bool IsCodeSent = false;
     private bool IsSending = false;
     private bool IsVerifying = false;
@@ -79,6 +86,8 @@
         {
             PhonNumber = PhoneNumber,
             ContryCode = SelectedCountry
+            ,
+            UserName = username
         });
 
         IsSending = false;
@@ -104,7 +113,7 @@
         if (res.IsSucceeded && res.Value)
         {
             await SecureStorage.SetAsync("userPhone", PhoneNumber);
-            Nav.NavigateTo("/");
+            Nav.NavigateTo("/", true);
         }
     }
 

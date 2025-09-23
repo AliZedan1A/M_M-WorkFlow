@@ -12,7 +12,7 @@ namespace ServerSide.Services.Interfaces
        Task<bool> EditPhonNumberById(int id,string newphonnumber);
        Task<List<UserModel>> GetUsers();
        Task<UserModel> GetUserById(int id);
-        Task<bool> SendOtpCode(string phonnumber, string contrycode);
+        Task<bool> SendOtpCode(string phonnumber, string contrycode,string username);
         Task<bool> VerfyOtpCode(string code, string phonnumber);
     }
 }

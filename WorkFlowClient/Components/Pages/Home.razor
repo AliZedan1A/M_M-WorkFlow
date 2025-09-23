@@ -9,146 +9,136 @@
 @inject NavigationManager _nav;
 @inject IUserService _userservice
 
-<section class="home-container">
-
-
-@if(IsLoding)
-{
-   
-  
-}
-else
-{
-    
-
-@if (isauth)
-{
-    @if (status == VerfyStatus.pending)
+<section class="home-container" dir="@Lang.Dir">
+    @if (IsLoding)
     {
-        <div class="alert alert-pending">
-            ⏳ حسابك قيد المراجعة، يرجى الانتظار حتى موافقة الإدارة.
-        </div>
+        <p>⏳ ...</p>
     }
-    else if (status == VerfyStatus.rejected)
+    else
     {
-        <div class="alert alert-rejected">
-            ❌ تم رفض حسابك، يرجى التسجيل مرة أخرى.
-        </div>
-    }
-    else if (status == VerfyStatus.Active)
-    {
-        <!-- WELCOME -->
-            <div class="welcome-header">
-                <h1 class="title">👋 مرحباً بك</h1>
-                <button class="btn-refresh" @onclick="RefreshPage">
-                    <i class="fas fa-sync-alt"></i>
-                </button>
-            </div>
-
-            <div class="clock-card" dir="rtl">
-                <div class="clock-row">
-                    <div class="clock-time">@TimeString</div>
-                    <div class="clock-sep">•</div>
-                    <div class="clock-date">@DateString</div>
-                </div>
-                <div class="clock-sub">
-                    ‏@DayString  •  אזור זמן: Asia/Jerusalem
-                </div>
-            </div>
-        <!-- SHIFT ACTION -->
-        <div class="shift-box">
-            @if (CurrentShift == null)
+        @if (isauth)
+        {
+            @if (status == VerfyStatus.pending)
             {
-                <div class="shift-card idle">
-                    <div class="shift-header">
-                        <i class="fas fa-briefcase"></i>
-                        <span>لا يوجد وردية حالياً</span>
-                    </div>
-                    <p class="shift-note">يمكنك بدء وردية جديدة بالضغط على الزر أدناه</p>
-                    <button class="btn-shift action" @onclick="@(() => ShowConfirm("start"))">
-                        <i class="fas fa-camera"></i> بدء وردية
+                <div class="alert alert-pending">@Lang.T("accountPending")</div>
+            }
+            else if (status == VerfyStatus.rejected)
+            {
+                <div class="alert alert-rejected">@Lang.T("accountRejected")</div>
+            }
+            else if (status == VerfyStatus.Active)
+            {
+                <!-- WELCOME -->
+                <div class="welcome-header">
+                    <h1 class="title">👋 @Lang.T("welcome")</h1>
+                    <button class="btn-refresh" @onclick="RefreshPage">
+                        <i class="fas fa-sync-alt"></i>
                     </button>
                 </div>
-            }
-            else
-            {
-                <div class="shift-card active">
-                    <div class="shift-header">
-                        <i class="fas fa-clock"></i>
-                        <span>وردية جارية</span>
+
+                <!-- Clock -->
+                <div class="clock-card" dir="@Lang.Dir">
+                    <div class="clock-row">
+                        <div class="clock-time">@TimeString</div>
+                        <div class="clock-sep">•</div>
+                        <div class="clock-date">@DateString</div>
                     </div>
-                    <p>بدأت عند: <b>@CurrentShift.StartTime.ToString("HH:mm")</b></p>
-                            <img src="@($"https://localhost:7246/api/Shift/ShiftImage/{CurrentShift.Id}")" alt="proof" class="shift-proof" />
-                    <button class="btn-shift action danger" @onclick="@(() => ShowConfirm("end"))">
-                        <i class="fas fa-stop-circle"></i> إنهاء الوردية
-                    </button>
+                    <div class="clock-sub">@DayString • Asia/Jerusalem</div>
                 </div>
-            }
-        </div>
-                    <p class="empty">انت تملك @NumberOfPendingShift ورديات باٍنتظار القبول</p>
 
-        <!-- MY SHIFTS -->
-        <section class="my-shifts">
-            <div class="shifts-header">
-                <h2>📅 وردياتي</h2>
-
-                <!-- FILTER -->
-                <div class="shift-filter">
-                    <label>اختر الشهر:</label>
-                    <select @onchange="OnMonthChanged" value="@SelectedMonth">
-                        @for (int m = 1; m <= 12; m++)
-                        {
-                            <option value="@m" selected="@(m == SelectedMonth)">
-                                @CultureInfo.CurrentCulture.DateTimeFormat.GetMonthName(m)
-                            </option>
-                        }
-                    </select>
-
-                    <label>اختر السنة:</label>
-                    <select @onchange="OnYearChanged" value="@SelectedYear">
-                        @foreach (var y in AvailableYears)
-                        {
-                            <option value="@y" selected="@(y == SelectedYear)">
-                                @y
-                            </option>
-                        }
-                    </select>
-
-                    <span class="count">(@FilteredShifts.Count)</span>
-                </div>
-            </div>
-
-            @if (FilteredShifts?.Any() == true)
-            {
-                <div class="shift-list">
-                    @foreach (var s in FilteredShifts)
+                <!-- SHIFT ACTION -->
+                <div class="shift-box">
+                    @if (CurrentShift == null)
                     {
-                        <div class="shift-item">
-                            <span class="date">@s.StartTime.ToString("dd.MM.yyyy")</span>
-                            <span class="time">@s.StartTime.ToString("HH:mm") - @s.EndTime.ToString("HH:mm")</span>
+                        <div class="shift-card idle">
+                            <div class="shift-header">
+                                <i class="fas fa-briefcase"></i>
+                                <span>@Lang.T("noShift")</span>
+                            </div>
+                            <p class="shift-note">@Lang.T("shiftNote")</p>
+                            <button class="btn-shift action" @onclick="@(() => ShowConfirm("start"))">
+                                <i class="fas fa-camera"></i> @Lang.T("startShift")
+                            </button>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="shift-card active">
+                            <div class="shift-header">
+                                <i class="fas fa-clock"></i>
+                                <span>@Lang.T("activeShift")</span>
+                            </div>
+                            <p>بدأت عند: <b>@CurrentShift.StartTime.ToString("HH:mm")</b></p>
+                            <img src="@($"https://localhost:7246/api/Shift/ShiftImage/{CurrentShift.Id}")" alt="proof" class="shift-proof" />
+                            <button class="btn-shift action danger" @onclick="@(() => ShowConfirm("end"))">
+                                <i class="fas fa-stop-circle"></i> @Lang.T("endShift")
+                            </button>
                         </div>
                     }
                 </div>
+
+                <p class="empty">@string.Format(Lang.T("pendingShifts"), NumberOfPendingShift)</p>
+
+                <!-- MY SHIFTS -->
+                <section class="my-shifts">
+                    <div class="shifts-header">
+                        <h2>@Lang.T("myShiftsTitle")</h2>
+
+                        <!-- FILTER -->
+                        <div class="shift-filter">
+                            <label>@Lang.T("chooseMonth")</label>
+                            <select @onchange="OnMonthChanged" value="@SelectedMonth">
+                                @for (int m = 1; m <= 12; m++)
+                                {
+                                    <option value="@m" selected="@(m == SelectedMonth)">
+                                        @CultureInfo.CurrentCulture.DateTimeFormat.GetMonthName(m)
+                                    </option>
+                                }
+                            </select>
+
+                            <label>@Lang.T("chooseYear")</label>
+                            <select @onchange="OnYearChanged" value="@SelectedYear">
+                                @foreach (var y in AvailableYears)
+                                {
+                                    <option value="@y" selected="@(y == SelectedYear)">@y</option>
+                                }
+                            </select>
+
+                            <span class="count">(@FilteredShifts.Count)</span>
+                        </div>
+                    </div>
+
+                    @if (FilteredShifts?.Any() == true)
+                    {
+                        <div class="shift-list">
+                            @foreach (var s in FilteredShifts)
+                            {
+                                <div class="shift-item">
+                                    <span class="date">@s.StartTime.ToString("dd.MM.yyyy")</span>
+                                    <span class="time">@s.StartTime.ToString("HH:mm") - @s.EndTime.ToString("HH:mm")</span>
+                                </div>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <p class="empty">@Lang.T("noAcceptedShifts")</p>
+                    }
+                </section>
             }
-            else
-            {
-                <p class="empty">لا يوجد لديك ورديات مقبولة في هذا الشهر.</p>
-            }
-        </section>
+        }
+        else
+        {
+            <div class="guest-box">
+                <h1 class="title">@Lang.T("guestWelcome")</h1>
+                <p class="subtitle">@Lang.T("guestSubtitle")</p>
+                <div class="guest-actions">
+                    <a href="/login" class="btn primary">@Lang.T("Login")</a>
+                    <a href="/about" class="btn secondary">@Lang.T("aboutSystem")</a>
+                </div>
+            </div>
+        }
     }
-}
-else
-{
-    <div class="guest-box">
-        <h1 class="title">👋 مرحباً بك</h1>
-        <p class="subtitle">يرجى تسجيل الدخول للمتابعة واستخدام النظام</p>
-        <div class="guest-actions">
-            <a href="/login" class="btn primary">تسجيل الدخول</a>
-            <a href="/about" class="btn secondary">ℹ️ عن النظام</a>
-        </div>
-    </div>
-}
-}
 </section>
 
 <!-- CONFIRM MODAL -->
@@ -156,11 +146,11 @@ else
 {
     <div class="modal-backdrop" @onclick="CloseConfirm">
         <div class="modal-content" @onclick:stopPropagation="true">
-            <h3>تأكيد العملية</h3>
+            <h3>@Lang.T("confirmAction")</h3>
             <p>@ConfirmMessage</p>
             <div class="modal-actions">
-                <button class="btn primary" @onclick="ConfirmAction">تأكيد</button>
-                <button class="btn secondary" @onclick="CloseConfirm">إلغاء</button>
+                <button class="btn primary" @onclick="ConfirmAction">@Lang.T("confirm")</button>
+                <button class="btn secondary" @onclick="CloseConfirm">@Lang.T("cancel")</button>
             </div>
         </div>
     </div>
@@ -197,7 +187,7 @@ else
     private void ShowConfirm(string action)
     {
         PendingAction = action;
-        ConfirmMessage = action == "start" ? "هل أنت متأكد أنك تريد بدء وردية جديدة؟" : "هل أنت متأكد أنك تريد إنهاء الوردية الحالية؟";
+        ConfirmMessage = action == "start" ? Lang.T("confirmstart") : Lang.T("confirmEnd");
         ShowConfirmModal = true;
     }
 

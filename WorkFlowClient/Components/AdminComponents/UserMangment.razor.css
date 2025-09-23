@@ -1,0 +1,86 @@
+﻿.user-mgmt {
+    padding: 20px;
+    color: #fff;
+}
+
+    .user-mgmt h2 {
+        margin-bottom: 20px;
+        font-size: 22px;
+        color: #2e5fff;
+    }
+
+.user-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: #141414;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0,0,0,.4);
+}
+
+    .user-table th,
+    .user-table td {
+        padding: 12px;
+        text-align: center;
+        border-bottom: 1px solid #2a2a2a;
+    }
+
+    .user-table th {
+        background: #1a1a1a;
+        font-weight: bold;
+        color: #ddd;
+    }
+
+    .user-table tr:hover {
+        background: rgba(46,95,255,0.08);
+    }
+
+    .user-table select {
+        background: #1a1a1a;
+        color: #fff;
+        border: 1px solid #333;
+        border-radius: 6px;
+        padding: 5px;
+        cursor: pointer;
+    }
+
+.actions {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+}
+
+.btn.small {
+    padding: 6px 10px;
+    font-size: 13px;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    transition: 0.3s;
+    text-decoration: none;
+}
+
+.btn.info {
+    background: #2e5fff;
+    color: #fff;
+}
+
+    .btn.info:hover {
+        background: #1d47e0;
+    }
+
+.btn.call {
+    background: #28a745;
+    color: #fff;
+}
+
+    .btn.call:hover {
+        background: #1f7a32;
+    }
+
+.loading,
+.empty {
+    margin: 20px 0;
+    text-align: center;
+    color: #aaa;
+}

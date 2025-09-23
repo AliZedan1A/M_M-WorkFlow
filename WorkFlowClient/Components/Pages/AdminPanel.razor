@@ -1,64 +1,54 @@
 ﻿@page "/Admin"
 @using WorkFlowClient.Components.AdminComponents
-
+@inject WorkFlowClient.Services.Class.LangState Lang
 <div class="admin-container">
     <header class="admin-header">
-        <h2>لوحة التحكم</h2>
+        <h2>@Lang.T("admin")</h2>
     </header>
 
     <nav class="admin-nav">
-        <button @onclick="() => SetActiveTab(AdminTabs.UsersRequst)" 
-        class="nav-btn @(activeTab == AdminTabs.UsersRequst ? "active" : "")">
+        <button @onclick="() => SetActiveTab(AdminTabs.UsersRequst)"
+                class="nav-btn @(activeTab == AdminTabs.UsersRequst ? "active" : "")">
             <span class="icon">&#128100;</span>
-            <span class="text">طلبات المستخدمين</span>
+            <span class="text">@Lang.T("usersRequests")</span>
         </button>
-        <button @onclick="() => SetActiveTab(AdminTabs.ShiftsRequst)" 
-        class="nav-btn @(activeTab == AdminTabs.ShiftsRequst ? "active" : "")">
+
+        <button @onclick="() => SetActiveTab(AdminTabs.ShiftsRequst)"
+                class="nav-btn @(activeTab == AdminTabs.ShiftsRequst ? "active" : "")">
             <span class="icon">&#128197;</span>
-            <span class="text">طلبات الورديات</span>
+            <span class="text">@Lang.T("shiftsRequests")</span>
         </button>
-        <button @onclick="() => SetActiveTab(AdminTabs.UserMangment)" 
-        class="nav-btn @(activeTab == AdminTabs.UserMangment ? "active" : "")">
+
+        <button @onclick="() => SetActiveTab(AdminTabs.UserMangment)"
+                class="nav-btn @(activeTab == AdminTabs.UserMangment ? "active" : "")">
             <span class="icon">&#128247;</span>
-            <span class="text">ادارة المستخدمين</span>
+            <span class="text">@Lang.T("userManagement")</span>
         </button>
-        <button @onclick="() => SetActiveTab(AdminTabs.ShiftMangment)" 
-        class="nav-btn @(activeTab == AdminTabs.ShiftMangment ? "active" : "")">
-            <span class="icon">&#9881;</span>
-            <span class="text">ادارة الورديات</span>
-        </button>
-   
     </nav>
-    
+
     <main class="admin-content animate-fade-in">
         @if (activeTab == AdminTabs.UsersRequst)
         {
-            <UsersRequst /> 
+            <UsersRequst />
         }
         else if (activeTab == AdminTabs.ShiftsRequst)
         {
-            <ShiftsRequst />
+            <ShiftsRequst UserId="@selectedUserId" />
         }
         else if (activeTab == AdminTabs.UserMangment)
         {
-            <UserMangment />
+            <UserMangment OnViewShifts="OpenUserShifts" />
         }
-        else if (activeTab == AdminTabs.ShiftMangment)
-        {
-            <ShiftMangment />
-        }
-      
     </main>
 </div>
-
 @code {
+    private int? selectedUserId;
+
     private enum AdminTabs
     {
         UsersRequst,
         ShiftsRequst,
         UserMangment,
-        ShiftMangment,
-
     }
 
     private AdminTabs activeTab = AdminTabs.UsersRequst;
@@ -66,5 +56,11 @@
     private void SetActiveTab(AdminTabs tab)
     {
         activeTab = tab;
+    }
+
+    private void OpenUserShifts(int userId)
+    {
+        selectedUserId = userId;
+        activeTab = AdminTabs.ShiftsRequst;
     }
 }

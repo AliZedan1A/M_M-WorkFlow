@@ -1,8 +1,21 @@
-﻿.home-container {
+﻿* {
+    box-sizing: border-box;
+    max-width: 100%;
+}
+
+html, body {
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
+}
+
+.home-container {
     padding: 16px;
     color: #fff;
     background: linear-gradient(135deg, #0d0d0d, #1a1a1a);
     min-height: 100vh;
+    max-width: 100%;
+    overflow-x: hidden;
 }
 
 /* ALERT */
@@ -39,6 +52,7 @@
     margin: 20px 0;
     display: flex;
     justify-content: center;
+    max-width: 100%;
 }
 
 .btn-shift {
@@ -53,26 +67,28 @@
     justify-content: center;
     gap: 8px;
     transition: background 0.3s, transform 0.2s;
+    max-width: 100%;
 }
+
     .btn-shift.action {
         background: #2e5fff;
         color: #fff;
         box-shadow: 0 4px 12px rgba(46, 95, 255, 0.4);
     }
+
         .btn-shift.action:hover {
             background: #1d47e0;
             transform: translateY(-2px);
         }
+
         .btn-shift.action.danger {
             background: #e63946;
             box-shadow: 0 4px 12px rgba(220, 53, 69, 0.4);
         }
+
             .btn-shift.action.danger:hover {
                 background: #c92a38;
             }
-
-
-   
 
 .shift-card {
     background: #141414;
@@ -85,9 +101,11 @@
     box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
     transition: 0.3s;
 }
+
     .shift-card.active {
         border-color: #ffc107;
     }
+
     .shift-card.idle {
         border-color: #2e5fff;
     }
@@ -102,10 +120,12 @@
     margin-bottom: 12px;
     color: #fff;
 }
+
 .shift-card p {
     color: #bbb;
     margin-bottom: 14px;
 }
+
 .shift-card .shift-note {
     font-size: 14px;
     color: #999;
@@ -120,7 +140,6 @@
     border: 1px solid #333;
 }
 
-
 /* SHIFTS */
 .my-shifts h2 {
     font-size: 18px;
@@ -132,6 +151,7 @@
     display: flex;
     flex-direction: column;
     gap: 10px;
+    max-width: 100%;
 }
 
 .shift-item {
@@ -142,6 +162,7 @@
     display: flex;
     justify-content: space-between;
     font-size: 14px;
+    max-width: 100%;
 }
 
 .info-box {
@@ -192,6 +213,7 @@
     text-decoration: none;
     transition: 0.3s;
     text-align: center;
+    max-width: 100%;
 }
 
     .btn.primary {
@@ -212,11 +234,13 @@
             border-color: #2e5fff;
             color: #fff;
         }
+
 .shifts-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
     margin-bottom: 12px;
+    flex-wrap: wrap;
 }
 
 .shift-filter {
@@ -228,6 +252,7 @@
     padding: 6px 10px;
     border-radius: 8px;
     border: 1px solid #333;
+    flex-wrap: wrap;
 }
 
     .shift-filter select {
@@ -242,6 +267,8 @@
         font-weight: bold;
         color: #2e5fff;
     }
+
+/* CLOCK */
 .clock-card {
     background: linear-gradient(135deg, #101010, #181818);
     border: 1px solid #2d2d2d;
@@ -250,7 +277,7 @@
     color: #f5f6f7;
     box-shadow: 0 6px 18px rgba(0, 0, 0, 0.5);
     margin: 18px auto;
-    max-width: 95%;
+    max-width: 100%;
     transition: transform .2s ease, box-shadow .2s ease;
 }
 
@@ -271,8 +298,9 @@
     font-size: 34px;
     font-weight: 800;
     letter-spacing: 1px;
-    color: #2e8cff; /* أزرق مؤسسي */
+    color: #2e8cff;
     text-shadow: 0 0 6px rgba(46, 140, 255, 0.5);
+    animation: pulse 2s infinite;
 }
 
 .clock-date {
@@ -297,7 +325,6 @@
     line-height: 1.4;
 }
 
-/* أنميشن للتوقيت */
 @keyframes pulse {
     0%, 100% {
         text-shadow: 0 0 6px rgba(46, 140, 255, 0.4);
@@ -308,24 +335,15 @@
     }
 }
 
-.clock-time {
-    animation: pulse 2s infinite;
-}
+/* REFRESH */
 .welcome-header {
     display: flex;
     align-items: center;
-    justify-content: space-between; /* إذا بدك الأيقونة بعيدة */
-    gap: 10px; /* إذا بدك الأيقونة قريبة من النص */
+    justify-content: space-between;
+    gap: 10px;
+    max-width: 100%;
 }
 
-.title {
-    margin: 0;
-    font-size: 24px;
-    font-weight: bold;
-    color: #2e5fff;
-}
-
-/* زر الريفريش الدائري */
 .btn-refresh {
     width: 36px;
     height: 36px;
@@ -351,7 +369,6 @@
         transition: transform 0.4s linear;
     }
 
-    /* دوران الأيقونة عند الضغط */
     .btn-refresh:active i {
         transform: rotate(180deg);
     }
