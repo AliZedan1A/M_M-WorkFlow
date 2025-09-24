@@ -20,6 +20,10 @@
     else
     {
         <div class="shift-list">
+            @if (UserId != null)
+            {
+                <h3 class="empty">@PendingShifts.Where(x=>x.ShiftStatus == ShiftStatus.Acepted).Count() عدد الشفتات المقبولة</h3>
+            }
             @foreach (var shift in PendingShifts)
             {
                 var isSuspicious = shift.StartTime.Date != shift.EndTime.Date;
@@ -27,7 +31,7 @@
                 <div class="shift-card @(isSuspicious ? "suspicious" : "")">
                     <div class="shift-header">
                         <strong>@shift.User?.Name</strong>
-                        <span class="phone">@shift.User?.PhonNumber</span>
+                        <span class="phone">رقم الهاتف :  @shift.User?.PhonNumber</span>
                     </div>
 
                     <div class="shift-body">
@@ -38,7 +42,7 @@
 
                         <div class="shift-media">
                             <!-- صورة الإثبات -->
-                            <img src="@($"https://localhost:7246/api/Shift/ShiftImage/{shift.Id}")"
+                            <img src="@($"https://10.0.0.9:7246/api/Shift/ShiftImage/{shift.Id}")"
                                  alt="إثبات الشيفت"
                                  style="max-width:300px; max-height:300px; border-radius:8px; object-fit:contain;" />
                             @if (shift.Latitude != 0 && shift.Longitude != 0)
@@ -56,6 +60,15 @@
 
                     @if(UserId!=null)
                     {
+                        <select @onchange="e => ChangeShiftStatus(shift.Id, e.Value?.ToString())"
+                                value="@shift.ShiftStatus.ToString()">
+                            @foreach (var status in Enum.GetValues<ShiftStatus>())
+                            {
+                                <option value="@status" selected="@(status == shift.ShiftStatus)">
+                                    @status
+                                </option>
+                            }
+                        </select>
                         <h3 class="empty">@shift.ShiftStatus</h3>
                     }
                     else
@@ -97,25 +110,25 @@
         }
         else
         {
-            
-        
-        var res = await _shiftservice.GetAllShiftsAsync();
-        if (res.IsSucceeded && res.Value != null)
-        {
-            var all = res.Value
-                .Where(s => s.ShiftStatus == ShiftStatus.pending && s.Latitude != 0 && s.Longitude != 0)
-                .ToList();
 
-            // جلب معلومات المستخدم لكل شفت
-            foreach (var shift in all)
+
+            var res = await _shiftservice.GetAllShiftsAsync();
+            if (res.IsSucceeded && res.Value != null)
             {
-                var userRes = await _userservice.GetUserByIdAsync(shift.UserId);
-                if (userRes.IsSucceeded)
-                    shift.User = userRes.Value;
-            }
+                var all = res.Value
+                    .Where(s => s.ShiftStatus == ShiftStatus.pending && s.Latitude != 0 && s.Longitude != 0)
+                    .ToList();
 
-            PendingShifts = all;
-        }
+                // جلب معلومات المستخدم لكل شفت
+                foreach (var shift in all)
+                {
+                    var userRes = await _userservice.GetUserByIdAsync(shift.UserId);
+                    if (userRes.IsSucceeded)
+                        shift.User = userRes.Value;
+                }
+
+                PendingShifts = all;
+            }
         }
         isLoading = false;
     }
@@ -134,4 +147,59 @@
             StateHasChanged();
         }
     }
+    private async Task ChangeShiftStatus(int shiftid, string? newStatusStr)
+    {
+        if (Enum.TryParse<ShiftStatus>(newStatusStr, out var newStatus))
+        {
+           
+
+            var res = await _shiftservice.ModfiyStatusAsync(new()
+            {
+                NewStatus = newStatus
+                ,ShiftId = shiftid
+            });
+            if (res.IsSucceeded)
+            {
+                var shift = PendingShifts?.FirstOrDefault(u => u.Id == shiftid);
+                if (shift != null) shift.ShiftStatus = newStatus;
+                StateHasChanged();
+            }
+        }
+    }
 }
+<style>
+    select {
+        padding: 10px 14px;
+        border: 1px solid #444;
+        border-radius: 12px;
+        background: #1e1e1e;
+        color: #fff;
+        font-size: 15px;
+        font-family: inherit;
+        outline: none;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        min-width: 160px;
+    }
+
+        select:hover {
+            border-color: #666;
+            background: #2a2a2a;
+        }
+
+        select:focus {
+            border-color: #4a90e2;
+            box-shadow: 0 0 6px rgba(74, 144, 226, 0.6);
+        }
+
+        select option {
+            background: #1e1e1e;
+            color: #fff;
+            padding: 8px;
+        }
+
+            select option:checked {
+                background: #4a90e2;
+                color: #fff;
+            }
+</style>

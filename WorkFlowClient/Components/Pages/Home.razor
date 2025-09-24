@@ -69,7 +69,7 @@
                                 <span>@Lang.T("activeShift")</span>
                             </div>
                             <p>بدأت عند: <b>@CurrentShift.StartTime.ToString("HH:mm")</b></p>
-                            <img src="@($"https://localhost:7246/api/Shift/ShiftImage/{CurrentShift.Id}")" alt="proof" class="shift-proof" />
+                            <img src="@($"https://10.0.0.9:7246/api/Shift/ShiftImage/{CurrentShift.Id}")" alt="proof" class="shift-proof" />
                             <button class="btn-shift action danger" @onclick="@(() => ShowConfirm("end"))">
                                 <i class="fas fa-stop-circle"></i> @Lang.T("endShift")
                             </button>
